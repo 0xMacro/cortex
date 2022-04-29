@@ -60,7 +60,6 @@ export function unescapeString(stringOrTerm) {
   }
   else if (stringOrTerm[0] === 'time') {
     const [, type, time] = stringOrTerm
-    console.log("cmon", type, time)
 
     const isInterval = typeof type === 'number'
 
