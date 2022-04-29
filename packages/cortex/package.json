@@ -1,0 +1,25 @@
+{
+  "name": "@0xmacro/cortex",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "ospec"
+  },
+  "files": [
+    "index.js",
+    "src/",
+    "vendor/"
+  ],
+  "keywords": [],
+  "author": "Gilbert",
+  "license": "ISC",
+  "devDependencies": {
+    "@0xmacro/cortex-dev": "*",
+    "ospec": "^4.1.1"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.0"
+  }
+}

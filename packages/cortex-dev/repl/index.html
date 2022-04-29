@@ -1,0 +1,151 @@
+<!doctype html>
+<title>Cortex Repl</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<div class="h-screen flex">
+  <div class="flex-1 flex flex-col">
+    <textarea id="codeInput" class="flex-1 p-4"></textarea>
+    <!-- TODO: Make this button work -->
+    <!-- <button class="p-2 bg-violet-600 text-white">Update</button> -->
+  </div>
+  <div id="flowDom" class="flex-1 p-4 bg-gray-100"></div>
+</div>
+
+<script type="module">
+import { createFlow, unescapeString } from '../node_modules/@0xmacro/cortex/index.js'
+import { ethers } from '../node_modules/ethers/dist/ethers.esm.min.js'
+import { html } from 'https://unpkg.com/lighterhtml@4.2.0/esm/index.js?module'
+
+window.ethers = ethers
+
+const provider = new ethers.providers.Web3Provider(window.ethereum)
+const signer = provider.getSigner()
+
+async function init() {
+  const code = codeInput.value || (
+    await (await fetch('../node_modules/@0xmacro/cortex/tests/integration/tuition-contract.pl')).text()
+  ).replace(`{{contractAddr}}`, '0x3C1F9d85d20bCDBafc35c81898b95025576819E6')
+
+  if (!codeInput.value) {
+    codeInput.value = code
+  }
+
+  const flow = await createFlow(code, {
+    async onCallFn({ block, env, contractAddress, functionSig, paramTypes, args, returnType, value, mutability }) {
+      const cacheKey = functionSig + (
+        paramTypes.length == 0
+        ? ''
+        : ethers.utils.defaultAbiCoder.encode(paramTypes, args)
+      )
+
+      // TODO: Handle more cases
+      if (mutability.view && block.cache[cacheKey]) {
+        console.log("onCallFn (cache hit)", functionSig, contractAddress)
+        return block.cache[cacheKey]
+      }
+      console.log("onCallFn", functionSig, args, block, contractAddress)
+
+      const returns = returnType.length
+        ? ` ${mutability.view ? 'view ' : ''}returns (${returnType.join(',')})`
+        : ''
+
+      const iface = new ethers.utils.Interface([
+        // Constructor
+        `function ${functionSig}${mutability.payable ? ' payable' : ''}${returns}`,
+      ])
+      const contract = new ethers.Contract(contractAddress, iface, provider)
+      const result = await contract.connect(env.signer).functions[functionSig](...args, { value: value }).then(
+        yes => console.log('yes', yes) || yes,
+        no => { console.log('no', no); throw no }
+      )
+
+      console.log("Result", result)
+
+      block.cache[cacheKey] = result
+
+      return result
+    }
+  })
+
+  await connectToMetamask()
+  await flow.init(await signer.getAddress(), 100, { signer })
+
+  // For playing with in the browser
+  window.flow = flow
+
+  await render()
+}
+
+async function render() {
+  let prompts;
+  try {
+    prompts = await flow.getPrompts(100)
+    console.log("Prompts:", prompts)
+  }
+  catch (err) {
+    if (err instanceof Error) {
+      throw err
+    }
+    throw new Error(err.args[0].toJavaScript())
+  }
+
+  for (let btn of document.querySelectorAll('.prompt-set button')) {
+    btn.disabled = true
+  }
+
+  let resultDiv = html.node`<div class="prompt-set"></div>`
+  for (let [type, ...args] of prompts) {
+    if (type === 'text') {
+      resultDiv.appendChild(html.node`
+        <p>${args.map(unescapeString).join('')}</p>
+      `)
+    }
+    else if (type === 'button') {
+      const [buttonText, action] = args
+      resultDiv.appendChild(html.node`
+        <button
+          onclick=${() => executeButtonAction(action)}
+          class="p-2 bg-violet-600 text-white disabled:bg-gray-400"
+        >
+          ${unescapeString(buttonText)}
+        </button>
+      `)
+    }
+    else {
+      resultDiv.appendChild(html.node`
+        <div>Unrecognized prompt type: ${type}</div>
+      `)
+    }
+  }
+  flowDom.appendChild(resultDiv)
+}
+
+async function executeButtonAction(action) {
+  console.log("Executing", action)
+  const result = await flow.execute(action)
+  for (let eff of result.effects) {
+    flowDom.appendChild(html.node`
+      <div class="text-violet-600">
+        ${JSON.stringify(eff)}
+      </div>
+    `)
+  }
+  await render()
+}
+
+async function connectToMetamask() {
+  try {
+    console.log("Signed in", await signer.getAddress())
+  }
+  catch(err) {
+    console.log("Not signed in")
+    await provider.send("eth_requestAccounts", [])
+  }
+}
+
+//
+// Start things off
+//
+init()
+
+</script>

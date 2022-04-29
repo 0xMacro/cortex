@@ -1,0 +1,31 @@
+{
+  "name": "@0xmacro/cortex-dev",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "cortex": "cli/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@ethereumjs/common": "^2.6.1",
+    "@ethereumjs/tx": "^3.5.0",
+    "@ethereumjs/vm": "^5.7.0",
+    "@ethersproject/abi": "^5.5.0",
+    "commander": "^9.0.0",
+    "ethereumjs-util": "^7.1.4",
+    "ethers": "^5.5.4",
+    "@0xmacro/cortex": "0.1.0",
+    "lodash": "^4.17.21",
+    "ospec": "^4.1.1"
+  },
+  "devDependencies": {
+    "ospec": "^4.1.1"
+  }
+}
