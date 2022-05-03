@@ -46,6 +46,8 @@ export function unescapeString(stringOrTerm) {
       }
     }
 
+    decimals = decimals.replace(/0+$/, '')
+
     return `${rounded ? '~' : ''}${integer}${decimals.length ? '.'+decimals : ''} ${label}`
   }
   else if (stringOrTerm[0] === 'date') {
