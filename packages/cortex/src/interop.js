@@ -71,7 +71,7 @@ export function unescapeString(stringOrTerm) {
       isInterval ? type :
       1
 
-    return `${time / factor} ${isInterval ? 'intervals' : type}`
+    return `${Number(time) / factor} ${isInterval ? 'intervals' : type}`
   }
 }
 

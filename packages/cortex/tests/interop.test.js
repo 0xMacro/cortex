@@ -40,7 +40,7 @@ o.spec('unescapeString', () => {
     o(unescapeString(['date', timestamp, 'YYYY-MM-DD HH:mm:ss'])).equals(`2022-03-${date.getDate()} ${date.getHours()}:12:11`)
   })
 
-  o.only('formats time', () => {
+  o('formats time', () => {
     const time = 60n * 60n * 24n * 120n / 100n
 
     // Tedious interpolation to make this test work across timezones
