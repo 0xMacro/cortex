@@ -5,11 +5,15 @@ import importPromisesModule from '../vendor/tau-prolog/modules/promises.js'
 
 import { CORTEX_BASE_CODE } from './cortex.js'
 
+import { bigMultiply } from './big-math'
+
 importJsModule(prolog)
 importListsModule(prolog)
 importPromisesModule(prolog)
 
 let idCounter = 100
+
+const ONE_ETH = BigInt('1000000000000000000')
 
 export async function createFlow(flowCode, {
   onCallFn,
@@ -93,7 +97,7 @@ export async function createFlow(flowCode, {
           value = value + '0'
         }
         if (/^[0-9]+\.[0-9]+$/.test(value)) {
-          cleanValue = [parseFloat(value)]
+          cleanValue = [bigMultiply(parseFloat(value), ONE_ETH)]
         }
       }
       else if (type === 'string' || type === 'text') {
