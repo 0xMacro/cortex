@@ -1,3 +1,5 @@
+import JSON_BIG from '@apimatic/json-bigint'
+
 export default function( pl ) {
 
 	var predicates = function() {
@@ -152,7 +154,7 @@ export default function( pl ) {
 				} else {
 					if(pl.type.is_variable(prolog)) {
 						try {
-							var jatom = new pl.type.Term(JSON.stringify(json.value), []);
+							var jatom = new pl.type.Term(JSON_BIG.stringify(json.value), []);
 							thread.prepend([new pl.type.State(
 								point.goal.replace(new pl.type.Term("=", [prolog, jatom])),
 								point.substitution,
@@ -161,8 +163,7 @@ export default function( pl ) {
 						} catch(ex) {}
 					} else {
 						try {
-							console.log(JSON.parse(prolog.id));
-							var obj = pl.fromJavaScript.apply(JSON.parse(prolog.id));
+							var obj = pl.fromJavaScript.apply(JSON_BIG.parse(prolog.id));
 							thread.prepend([new pl.type.State(
 								point.goal.replace(new pl.type.Term("=", [json, obj])),
 								point.substitution,
@@ -214,7 +215,7 @@ export default function( pl ) {
 		// toString
 		pl.type.JSValue.prototype.toString = function() {
 			return typeof this.value === 'object'
-			? `<javascript>(${JSON.stringify(this.value)})`
+			? `<javascript>(${JSON_BIG.stringify(this.value)})`
 			: "<javascript>(" + (typeof this.value).toLowerCase() + ")";
 		};
 
